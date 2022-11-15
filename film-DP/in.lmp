@@ -1,0 +1,51 @@
+# bulk Cu
+
+units           metal
+boundary        p p p
+atom_style      atomic
+timestep        0.001
+neighbor        2.0 bin
+
+read_data	    init.lmp
+mass 		    1 64
+
+variable  minstp  equal  10000   #minimization time steps
+variable  rlxstp  equal  8000    #relaxation steps
+
+pair_style		deepmd ../../frozen_model.pb
+pair_coeff	    
+
+
+thermo          10
+
+timestep   0.001
+min_style  cg
+
+label loop
+
+variable r3 loop 20
+
+minimize   1.0e-25 1.0e-25 ${minstp} 10000
+
+fix 1 all box/relax  tri 0.0 fixedpoint 0.0 0.0 0.0
+
+minimize   1.0e-25 1.0e-25 ${minstp} 10000
+
+unfix 1
+
+next r3
+jump SELF loop
+
+compute    stress  all  stress/atom    NULL              # NULL if on PC
+
+
+compute    pepa    all    pe/atom                          ### Potential Energy
+
+
+
+dump 1 all custom 1 min.dump id type  x y z fx fy fz c_pepa c_stress[1] c_stress[2] c_stress[3] c_stress[4] c_stress[5] c_stress[6]
+
+dump_modify 1 sort id
+run 0
+undump 1
+

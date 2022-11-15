@@ -1,0 +1,30 @@
+# bulk cu
+
+units           metal
+boundary        p p p
+atom_style      atomic
+timestep        0.001
+neighbor        2.0 bin
+
+read_data	    init.lmp
+mass 		    1 64
+
+pair_style	    deepmd ../../frozen_model.pb
+pair_coeff	    
+
+
+thermo          100
+thermo_style    custom step pe ke etotal temp press vol cella cellb cellc cellalpha cellbeta cellgamma
+dump	        1 all custom 10000 traj/*_disquad.dump id type x y z
+dump_modify     1 sort id format float %20.16e 
+
+min_style 		cg
+minimize		1.0e-6  1.0e-8  100000 1000000
+minimize		1.0e-8  1.0e-10 100000 1000000
+minimize		1.0e-10  1.0e-12 100000 1000000
+minimize		1.0e-13  1.0e-15 100000 1000000
+minimize		1.0e-18  1.0e-20 100000 1000000
+minimize		1.0e-23  1.0e-25 100000 1000000
+undump 			1  # close the ID dump
+
+reset_timestep  0
